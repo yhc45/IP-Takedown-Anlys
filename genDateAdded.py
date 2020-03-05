@@ -15,11 +15,11 @@ def extract_zip(zip_file):
   with zipfile.ZipFile(zip_file) as myzip:
     with myzip.open('blocklist-ipsets-master/spamhaus_drop.netset') as myfile:
       content = myfile.readlines()
-      filter_list = [x.rstrip('\n') for x in content if not x.startswith('#')]
+      filter_list = [x.strip('\n') for x in content if not x.startswith('#')]
       curr_drop = set(filter_list)
     with myzip.open('blocklist-ipsets-master/spamhaus_edrop.netset') as myfile:
       content = myfile.readlines()
-      filter_list = [x.rstrip('\n') for x in content if not x.startswith('#')]
+      filter_list = [x.strip('\n') for x in content if not x.startswith('#')]
       curr_edrop = set(filter_list)
   return
 
@@ -57,11 +57,20 @@ def main():
           drop_data[ip] = [date]
         else:
           drop_data[ip].append(date)
+        if date not in drop_data:
+          drop_data[date] = ["Add %s"%ip]
+        else:
+          drop_data[date].append("Add %s"%ip)
+
       for ip in added_edrop:
         if ip not in edrop_data:
           edrop_data[ip] = [date]
         else:
           edrop_data[ip].append(date)
+        if date not in edrop_data:
+          edrop_data[date] = ["Add %s"%ip]
+        else:
+          edrop_data[date].append("Add %s"%ip)
 
       #calculating the ones removed from the blacklist
       removed_drop =  prev_drop - curr_drop
@@ -69,10 +78,18 @@ def main():
       for ip in removed_drop:
         if ip in drop_data:
           drop_data[ip].append(date)
+        if date not in drop_data:
+          drop_data[date] = ["Remove %s"%ip]
+        else:
+          drop_data[date].append("Remove %s"%ip)
 
       for ip in removed_edrop:
         if ip in edrop_data:
           edrop_data[ip].append(date)
+        if date not in edrop_data:
+          edrop_data[date] = ["Remove %s"%ip]
+        else:
+          edrop_data[date].append("Remove %s"%ip)
       prev_drop = curr_drop
       prev_edrop = curr_edrop
     else:
